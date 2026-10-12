@@ -127,53 +127,56 @@
   if (winMinBtn) winMinBtn.addEventListener('click', () => window.bridge?.winMinimize());
   if (winCloseBtn) winCloseBtn.addEventListener('click', () => window.bridge?.winClose());
 
+  // Pointer events + setPointerCapture: pointerup/pointercancel are delivered
+  // to the element even when the release happens outside the window, so the
+  // drag/resize can never get "stuck" to the cursor. The ev.buttons === 0
+  // check is a second safety net if an event is still lost.
   if (topbarEl) {
     let dStart = null;
-    topbarEl.addEventListener('mousedown', async (e) => {
+    const endDrag = (id) => { if (dStart && (id === undefined || dStart.id === id)) dStart = null; };
+    topbarEl.addEventListener('pointerdown', async (e) => {
       if (e.button !== 0) return;
       if (e.target.closest('input, button, .swatch, .lbl, .win-controls')) return;
       const b = await window.bridge?.winGetBounds();
       if (!b) return;
-      dStart = { mx: e.screenX, my: e.screenY, x: b.x, y: b.y, scale: window.devicePixelRatio || 1 };
-      const onMove = (ev) => {
-        if (!dStart) return;
-        window.bridge?.winDragMove(
-          dStart.x + (ev.screenX - dStart.mx) / dStart.scale,
-          dStart.y + (ev.screenY - dStart.my) / dStart.scale
-        );
-      };
-      const onUp = () => {
-        dStart = null;
-        window.removeEventListener('mousemove', onMove);
-        window.removeEventListener('mouseup', onUp);
-      };
-      window.addEventListener('mousemove', onMove);
-      window.addEventListener('mouseup', onUp);
+      dStart = { mx: e.screenX, my: e.screenY, x: b.x, y: b.y, scale: window.devicePixelRatio || 1, id: e.pointerId };
+      try { topbarEl.setPointerCapture(e.pointerId); } catch (_) { /* ignore */ }
     });
+    topbarEl.addEventListener('pointermove', (ev) => {
+      if (!dStart || ev.pointerId !== dStart.id) return;
+      if (ev.buttons === 0) { endDrag(); return; }
+      window.bridge?.winDragMove(
+        dStart.x + (ev.screenX - dStart.mx) / dStart.scale,
+        dStart.y + (ev.screenY - dStart.my) / dStart.scale
+      );
+    });
+    topbarEl.addEventListener('pointerup', (ev) => endDrag(ev.pointerId));
+    topbarEl.addEventListener('pointercancel', (ev) => endDrag(ev.pointerId));
+    window.addEventListener('blur', () => endDrag());
   }
 
   if (resizeHandle) {
     let rStart = null;
-    resizeHandle.addEventListener('mousedown', async (e) => {
+    const endResize = (id) => { if (rStart && (id === undefined || rStart.id === id)) rStart = null; };
+    resizeHandle.addEventListener('pointerdown', async (e) => {
+      if (e.button !== 0) return;
       e.preventDefault();
       const b = await window.bridge?.winGetBounds();
       if (!b) return;
-      rStart = { mx: e.screenX, my: e.screenY, w: b.width, h: b.height, scale: window.devicePixelRatio || 1 };
-      const onMove = (ev) => {
-        if (!rStart) return;
-        window.bridge?.winResize(
-          rStart.w + (ev.screenX - rStart.mx) / rStart.scale,
-          rStart.h + (ev.screenY - rStart.my) / rStart.scale
-        );
-      };
-      const onUp = () => {
-        rStart = null;
-        window.removeEventListener('mousemove', onMove);
-        window.removeEventListener('mouseup', onUp);
-      };
-      window.addEventListener('mousemove', onMove);
-      window.addEventListener('mouseup', onUp);
+      rStart = { mx: e.screenX, my: e.screenY, w: b.width, h: b.height, scale: window.devicePixelRatio || 1, id: e.pointerId };
+      try { resizeHandle.setPointerCapture(e.pointerId); } catch (_) { /* ignore */ }
     });
+    resizeHandle.addEventListener('pointermove', (ev) => {
+      if (!rStart || ev.pointerId !== rStart.id) return;
+      if (ev.buttons === 0) { endResize(); return; }
+      window.bridge?.winResize(
+        rStart.w + (ev.screenX - rStart.mx) / rStart.scale,
+        rStart.h + (ev.screenY - rStart.my) / rStart.scale
+      );
+    });
+    resizeHandle.addEventListener('pointerup', (ev) => endResize(ev.pointerId));
+    resizeHandle.addEventListener('pointercancel', (ev) => endResize(ev.pointerId));
+    window.addEventListener('blur', () => endResize());
   }
 
   /* ================= geometry helpers ================= */
