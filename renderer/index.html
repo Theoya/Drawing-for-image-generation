@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'" />
+  <title>Sketchpad</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+    <header id="topbar">
+      <div class="brand">✏️ <b>Sketchpad</b></div>
+
+      <div class="tool-group">
+        <label class="lbl">Color</label>
+        <input type="color" id="color" value="#ffffff" title="Pick a color" />
+        <div class="swatches" id="swatches"></div>
+      </div>
+
+      <div class="tool-group">
+        <label class="lbl">Size&nbsp;<span id="sizeVal" class="val">12</span></label>
+        <input type="range" id="size" min="1" max="120" step="1" value="12" title="Brush size ( [ and ] )" />
+      </div>
+
+      <div class="tool-group">
+        <label class="lbl">Opacity&nbsp;<span id="opacityVal" class="val">100%</span></label>
+        <input type="range" id="opacity" min="1" max="100" step="1" value="100" title="Stroke opacity" />
+      </div>
+
+      <div id="status">Ready</div>
+
+      <div class="win-controls">
+        <button id="winMin" title="Minimize">–</button>
+        <button id="winClose" title="Close (exits the app)" class="close">✕</button>
+      </div>
+    </header>
+
+    <div id="main">
+      <nav id="toolbar">
+        <button class="tool active" data-tool="brush"    title="Brush (B) — smooth, pressure-sensitive">🖌️</button>
+        <button class="tool"        data-tool="pencil"   title="Pencil (P) — grainy, light touch">✏️</button>
+        <button class="tool"        data-tool="marker"   title="Marker (M) — flat, translucent, blends">🖊️</button>
+        <button class="tool"        data-tool="airbrush" title="Airbrush (A) — soft spray">💨</button>
+        <button class="tool"        data-tool="eraser"   title="Eraser (E) — right-click also erases">🧽</button>
+      </nav>
+
+      <div id="stage">
+        <canvas id="canvas" width="1600" height="1000"></canvas>
+        <div id="cursor" class="hidden"></div>
+      </div>
+    </div>
+
+    <footer id="bottombar">
+      <button id="undo" title="Undo (Ctrl+Z)">↩ Undo</button>
+      <button id="redo" title="Redo (Ctrl+Y / Ctrl+Shift+Z)">↪ Redo</button>
+      <span class="sep"></span>
+      <button id="load" title="Open an image onto the canvas">📂 Open</button>
+      <button id="savePng" title="Save as PNG (Ctrl+S)">💾 Save PNG</button>
+      <button id="saveJpg" title="Save as JPEG">📷 Save JPEG</button>
+      <span class="sep"></span>
+      <button id="clear" class="danger" title="Clear the canvas">🗑 Clear</button>
+      <span class="sep"></span>
+      <button id="flip" title="Flip canvas orientation (F) — rotates the drawing 90°, remembered on relaunch">↕ Flip</button>
+      <span id="penBadge" class="badge hidden">🖊 pen detected</span>
+    </footer>
+
+    <div id="resize-handle" title="Drag to resize the window"></div>
+  </div>
+  <script src="renderer.js"></script>
+</body>
+</html>

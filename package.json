@@ -1,0 +1,14 @@
+{
+  "name": "sketchpad",
+  "version": "1.0.0",
+  "description": "Pressure-sensitive drawing app for pen displays",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "mcp": "node mcp-server.js",
+    "mcp-stdio": "node mcp-server.js --stdio"
+  },
+  "devDependencies": {
+    "electron": "latest"
+  }
+}
